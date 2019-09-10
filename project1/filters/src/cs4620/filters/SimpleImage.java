@@ -41,7 +41,8 @@ public class SimpleImage {
     /**
      * Access the image content, which is organized from left to right and bottom to top.
      * The channel is the fastest-varying index and the row is the slowest-varying.
-     * 
+     * c = 0: red; c = 1: green; c = 2: blue
+     *
      * @return The data array, which can be used for reading or writing.
      */
     public byte[] getData() {
@@ -58,7 +59,9 @@ public class SimpleImage {
      */    
     public byte getPixel(int ix, int iy, int c) {
     	//TODO getPixel
-        return 0;
+        int pixel_i = iy * width + ix;
+        int start_index = pixel_i * 3;
+        return data[start_index+c];
     }
 
     /**
@@ -71,6 +74,9 @@ public class SimpleImage {
      */
     public void setPixel(int ix, int iy, int c, byte val) {
     	//TODO setPixel
+        int pixel_i = iy * width + ix;
+        int start_index = pixel_i * 3;
+        data[start_index+c] = val;
     }
 
 
