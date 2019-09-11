@@ -34,6 +34,7 @@ public class NearestNeighborResampler implements ResampleEngine {
                 }else if(y<0){
                     y = 0;
                 }
+
                 dst.setPixel(j,i,0,src.getPixel(x,y,0));
                 dst.setPixel(j,i,1,src.getPixel(x,y,1));
                 dst.setPixel(j,i,2,src.getPixel(x,y,2));

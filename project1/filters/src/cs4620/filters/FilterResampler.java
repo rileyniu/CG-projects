@@ -38,6 +38,59 @@ public class FilterResampler implements ResampleEngine {
     public void resample(SimpleImage src, SimpleImage dst, double left, double bottom, double right, double top) {
         // TODO upsample(interpolate) and downsample image with arbitrary filter
 
+        for (int i = 0; i <dst.getHeight();i++) {
+            for (int j = 0; j < dst.getWidth(); j++) {
+
+                // obtain pixel in source img
+                double x = left+((float)j+0.5)*(right-left)/dst.getWidth();
+                double y = bottom+((float)i+0.5)*(top-bottom)/dst.getHeight();
+
+                if(x > src.getWidth()-1){
+                    x = src.getWidth()-1;
+                }else if(x<0){
+                    x = 0;
+                }
+
+                if(y > src.getHeight()-1){
+                    y = src.getHeight()-1;
+                }else if(y<0){
+                    y = 0;
+                }
+
+                // handle downsampling
+                double radius_x = filter.radius();
+                double radius_y = filter.radius();
+                if(dst.getWidth()/src.getWidth() > 1){
+                    radius_x = radius_x * ((right-left)/dst.getWidth());
+                }
+                if(dst.getHeight()/src.getHeight()>1){
+                    radius_y = radius_y * ((top-bottom)/dst.getHeight());
+                }
+
+                double start_x = (x-radius_x) < 0 ? 0: x-radius_x;
+                double start_y = (y-radius_y) < 0 ? 0: y-radius_y;
+                double end_x = (x+radius_x) > src.getWidth() ? src.getWidth()-1: x+radius_x;
+                double end_y = (y+radius_y) > src.getHeight() ? src.getHeight()-1: y+radius_y;
+
+                float[] dst_outputs = new float[3];
+
+                //(m,n) are all pixels fall in support of the filter
+                for (int m = (int)start_y; m<=end_y; m++ ){
+                    for (int n = (int)start_x; n<=end_x; n++ ){
+                        float offset = (float)Math.sqrt(Math.pow(n-x,2)+Math.pow(m-y,2));
+                        float value = filter.evaluate(offset);
+                        dst_outputs[0] +=value*(src.getPixel(n,m,0) & 0xff);
+                        dst_outputs[1] +=value*(src.getPixel(n,m,1) & 0xff);
+                        dst_outputs[2] +=value*(src.getPixel(n,m,2) & 0xff);
+                    }
+                }
+
+                dst.setPixel(j,i,0,(byte)Math.max(0,Math.min(dst_outputs[0],255)));
+                dst.setPixel(j,i,1,(byte)Math.max(0,Math.min(dst_outputs[1],255)));
+                dst.setPixel(j,i,2,(byte)Math.max(0,Math.min(dst_outputs[2],255)));
+            }
+        }
+
     }
 
 }
