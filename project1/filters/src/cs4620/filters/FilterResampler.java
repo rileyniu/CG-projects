@@ -19,7 +19,7 @@ package cs4620.filters;
  *          dst[1,1] = 0.88 * (0.08 * src[3,3] + 0.92 * src[3,4]) + 0.12 *(0.08 * src[4,3] + 0.92 * src[4,4] = 1.0
  *          dst[1,2] = 0.6 * (0.12 * src[4,4] + 0.88 * src[3,4]) = 0.6
  *      3. B-spline cubic:
- *          dst[1,2] = 0.5092
+ *          dst[1,2] = 0.653*0.036*src[3,3] + 0.653*0.539*src[3,4] + 0.233*0.036*[4,3] + 0.233*0.539*src[4,4] = 0.5092
 
  */
 public class FilterResampler implements ResampleEngine {

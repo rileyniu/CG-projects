@@ -23,6 +23,10 @@ public class NearestNeighborResampler implements ResampleEngine {
                 int x = (int) Math.round(left+offset_x+j*delta_x);
                 int y = (int) Math.round(bottom+offset_y+i*delta_y);
 
+                // x and y are in the exact middle of four pixels
+                // set up so it will arbituarily pick four samples, write the ceilings and floor so its always
+                // providing 4 neighbors, avoiding a special case
+
                 if(x > src.getWidth()-1){
                     x = src.getWidth()-1;
                 }else if(x<0){
