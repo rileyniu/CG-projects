@@ -41,10 +41,11 @@ public class FilterResampler implements ResampleEngine {
         for (int i = 0; i <dst.getHeight();i++) {
             for (int j = 0; j < dst.getWidth(); j++) {
 
-                // obtain pixel in source img
+                // obtain target pixel in source img
                 double x = left+((float)j+0.5)*(right-left)/dst.getWidth();
                 double y = bottom+((float)i+0.5)*(top-bottom)/dst.getHeight();
 
+                // check for boundaries
                 if(x > src.getWidth()-1){
                     x = src.getWidth()-1;
                 }else if(x<0){
@@ -57,16 +58,17 @@ public class FilterResampler implements ResampleEngine {
                     y = 0;
                 }
 
-                // handle downsampling
+                // handle downsampling for x and y seperately
                 double radius_x = filter.radius();
                 double radius_y = filter.radius();
                 if(dst.getWidth()/src.getWidth() > 1){
-                    radius_x = radius_x * ((right-left)/dst.getWidth());
+                    radius_x = radius_x * dst.getWidth()/src.getWidth(); // ((right-left)/dst.getWidth());
                 }
                 if(dst.getHeight()/src.getHeight()>1){
-                    radius_y = radius_y * ((top-bottom)/dst.getHeight());
+                    radius_y = radius_y * dst.getHeight()/src.getHeight();//((top-bottom)/dst.getHeight());
                 }
 
+                // set starting and ending position of filter
                 double start_x = (x-radius_x) < 0 ? 0: x-radius_x;
                 double start_y = (y-radius_y) < 0 ? 0: y-radius_y;
                 double end_x = (x+radius_x) > src.getWidth() ? src.getWidth()-1: x+radius_x;
@@ -74,17 +76,19 @@ public class FilterResampler implements ResampleEngine {
 
                 float[] dst_outputs = new float[3];
 
-                //(m,n) are all pixels fall in support of the filter
+                //(m,n) are all pixels fall in support of the filter: fB2(x,y)=fB(x)fB(y)
                 for (int m = (int)start_y; m<=end_y; m++ ){
                     for (int n = (int)start_x; n<=end_x; n++ ){
-                        float offset = (float)Math.sqrt(Math.pow(n-x,2)+Math.pow(m-y,2));
-                        float value = filter.evaluate(offset);
-                        dst_outputs[0] +=value*(src.getPixel(n,m,0) & 0xff);
-                        dst_outputs[1] +=value*(src.getPixel(n,m,1) & 0xff);
-                        dst_outputs[2] +=value*(src.getPixel(n,m,2) & 0xff);
+
+                        //TODO: scalue the input/output
+                        float filter_output = filter.evaluate((float)x-n)*filter.evaluate((float)y-m);
+                        dst_outputs[0] += filter_output*(src.getPixel(n,m,0) & 0xff);
+                        dst_outputs[1] += filter_output*(src.getPixel(n,m,1) & 0xff);
+                        dst_outputs[2] += filter_output*(src.getPixel(n,m,2) & 0xff);
                     }
                 }
 
+                // set target pixel value with clamping
                 dst.setPixel(j,i,0,(byte)Math.max(0,Math.min(dst_outputs[0],255)));
                 dst.setPixel(j,i,1,(byte)Math.max(0,Math.min(dst_outputs[1],255)));
                 dst.setPixel(j,i,2,(byte)Math.max(0,Math.min(dst_outputs[2],255)));
