@@ -1,6 +1,8 @@
 package meshgen;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
 import math.Vector2;
 import math.Vector3;
 /**
@@ -11,7 +13,8 @@ import math.Vector3;
  *  - Generating vertex normals for existing mesh geometry
  *  
  * @author ers273, xd93, srm
- * @author Your Name Here
+ * @author Riley Niu(hn263), Adrian Zheng(yz388)
+ *
  */
 
 class MeshGen {
@@ -29,11 +32,110 @@ class MeshGen {
 	 */
 	public static OBJMesh cylinder(int divisions) {
 		OBJMesh outputMesh = new OBJMesh();
-		
+
 		// Task1: Generate Cylinder (20pt)
 		// TODO:
+
 		// Calculate Vertices (positions, uvs, and normals )
+		Vector3[] vecList = new Vector3[divisions];
+		double delta = 2* Math.PI/divisions;
+		double radius = 1;
+
+		for (int i= 0;i<divisions;i++){
+			double x = radius * Math.cos((i * delta));
+			double z = radius * Math.sin((-i * delta));
+			outputMesh.positions.add((new Vector3((float)x, 1f, (float)z)));
+			outputMesh.normals.add(new Vector3((float)x, 0f, (float)z));
+			vecList[i] = new Vector3((float)x, -1f, (float)z);
+		}
+
+		for (int i= 0;i<divisions;i++){
+			outputMesh.positions.add(vecList[i]);
+		}
+		outputMesh.positions.add((new Vector3(0,1f,0)));
+		outputMesh.positions.add((new Vector3(0,-1f,0)));
+
+		// Put caps' normals into the mesh
+		outputMesh.normals.add((new Vector3(0,1f,0)));
+		outputMesh.normals.add((new Vector3(0,-1f,0)));
+
+		//Put three uvs into the mesh
+		for (int j = 0; j<=divisions;j++){
+			outputMesh.uvs.add((new Vector2((float)(j/divisions), 0.5f)));
+		}
+
+		for (int j = 0; j<=divisions;j++){
+			outputMesh.uvs.add((new Vector2((float)(j/divisions), 0.0f)));
+		}
+
+		// bottom cap
+		outputMesh.uvs.add(new Vector2((float)0.25,(float)0.75));
+		for(int i = 0; i < divisions; i++) {
+			outputMesh.uvs.add(new Vector2((float)(0.25+0.25*Math.cos(delta*i)),
+					(float)(0.75+0.25*Math.sin(delta*i))));
+		}
+		// top cap
+		outputMesh.uvs.add(new Vector2((float)0.75,(float)0.75));
+		for(int i = 0; i < divisions; i++) {
+			outputMesh.uvs.add(new Vector2((float)(0.75+0.25*Math.cos(delta*i)),
+					(float)(0.75+0.25*Math.sin(delta*i))));
+		}
+
+
 		// Calculate indices in faces (use OBJFace class)
+		int n = divisions;
+		for(int i = 0; i < n-1; i++){
+			OBJFace bot = new OBJFace(3, true, true);
+			OBJFace top = new OBJFace(3, true, true);
+			OBJFace side1 = new OBJFace(3, true, true);
+			OBJFace side2 = new OBJFace(3, true, true);
+
+			bot.setVertex(0, i+n, 2*n+2+i, n+1);
+			bot.setVertex(1, 2*n+1, 4*n+3, n+1);
+			bot.setVertex(2, i+n+1, 2*n+i+3, n+1);
+			outputMesh.faces.add(bot);
+
+			top.setVertex(0, i, 3*n+2+i, n);
+			top.setVertex(1, i+1, 3*n+3+i, n);
+			top.setVertex(2, 2*n, 4*n+2, n);
+			outputMesh.faces.add(top);
+
+			side1.setVertex(0, i, i, i);
+			side1.setVertex(1, i+n, i+n+1, i);
+			side1.setVertex(2, i+1, i+1, i+1);
+			outputMesh.faces.add(side1);
+
+			side2.setVertex(0, i+1, i+1, i+1);
+			side2.setVertex(1, i+n, i+n+1, i);
+			side2.setVertex(2, i+n+1, i+n+2, i+1);
+			outputMesh.faces.add(side2);
+
+
+		}
+
+		OBJFace lastTop = new OBJFace(3, true, true);
+		lastTop.setVertex(0, n-1, 4*n, n);
+		lastTop.setVertex(1, 0, 4*n+1, n);
+		lastTop.setVertex(2, 2*n, 4*n+2, n);
+		outputMesh.faces.add(lastTop);
+
+		OBJFace lastSide1 = new OBJFace(3, true, true);
+		lastSide1.setVertex(0, n-1, n-1, n-1);
+		lastSide1.setVertex(1, 2*n-1, 2*n, n-1);
+		lastSide1.setVertex(2, 0, n, 0);
+		outputMesh.faces.add(lastSide1);
+
+		OBJFace lastSide2 = new OBJFace(3, true, true);
+		lastSide2.setVertex(0, 0, n, 0);
+		lastSide2.setVertex(1, 2*n-1, 2*n, n-1);
+		lastSide2.setVertex(2, n, 2*n+1, 0);
+		outputMesh.faces.add(lastSide2);
+
+		OBJFace lastBottom = new OBJFace(3, true, true);
+		lastBottom.setVertex(0, n, 3*n+1, n+1);
+		lastBottom.setVertex(1, 2*n-1, 3*n, n+1);
+		lastBottom.setVertex(2, 2*n+1, 4*n+3, n+1);
+		outputMesh.faces.add(lastBottom);
 
 		return outputMesh;
 	}
@@ -137,8 +239,8 @@ class MeshGen {
 	 * @return A newly created OBJMesh that is a copy of the input mesh but with new normals
 	 */
 	public static OBJMesh createNormals(OBJMesh inputMesh) {
-		OBJMesh outputMesh = new OBJMesh();
-		
+		OBJMesh outputMesh = inputMesh;//new OBJMesh();
+
 		// Task2: Compute Normals (35pt)
 		// TODO:
 		// Copy position data
@@ -148,7 +250,34 @@ class MeshGen {
 		// Calculate face normals, distribute to adjacent vertices
 		// Normalize new normals
 
+		ArrayList<Vector3> positions = inputMesh.positions;
+		ArrayList<OBJFace> faces = inputMesh.faces;
+		for (int i =0;i<inputMesh.positions.size();i++){
+			outputMesh.normals.add(i, new Vector3((float)0.0, (float)0.0, (float)0.0));
+		}
+
+		for (int i = 0;i<faces.size();i++){
+			Vector3 pos1 = positions.get(faces.get(i).positions[0]);
+			Vector3 pos2 = positions.get(faces.get(i).positions[1]);
+			Vector3 pos3 = positions.get(faces.get(i).positions[2]);
+			Vector3 triNormal = calculateSurNorm(pos1, pos2, pos3);
+			outputMesh.normals.get(faces.get(i).positions[0]).add(triNormal);
+			outputMesh.normals.get(faces.get(i).positions[1]).add(triNormal);
+			outputMesh.normals.get(faces.get(i).positions[2]).add(triNormal);
+		}
+
+		for(int i = 0; i < outputMesh.normals.size(); i++){
+			outputMesh.normals.get(i).normalize();
+		}
+
 		return outputMesh;
+	}
+
+	private static Vector3 calculateSurNorm(Vector3 p1, Vector3 p2, Vector3 p3){
+		Vector3 d1 = p1.clone().sub(p2);
+		Vector3 d2 = p3.clone().sub(p2);
+		Vector3 norm = d1.cross(d2).normalize().negate();
+		return norm;
 	}
 	
 	
