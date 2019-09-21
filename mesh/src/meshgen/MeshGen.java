@@ -56,7 +56,74 @@ class MeshGen {
 		// TODO:
 		// Calculate Vertices (positions, uvs, and normals )
 		// Calculate indices in faces (use OBJFace class)
-		
+		for (int m = 0; m <= divisionsV; m++) {
+			if (m == 0) {
+				outputMesh.positions.add((new Vector3(0f, 1f, 0f)));
+				System.out.println(0);
+				System.out.println(1);
+				System.out.println(0);
+				System.out.println("______________________");
+				outputMesh.normals.add((new Vector3(0f,1f,0f)));
+				for (int n = 0; n < divisionsU; n++) {
+					double u = (double)n/(double)divisionsU;
+					outputMesh.uvs.add((new Vector2((float)u, 1f)));
+//					System.out.println(u);
+//					System.out.println(1);
+				}
+			}else if (m == divisionsV) {
+				outputMesh.positions.add((new Vector3(0f, -1f, 0f)));
+				outputMesh.normals.add((new Vector3(0f,-1f,0f)));
+				System.out.println(0);
+				System.out.println(-1);
+				System.out.println(0);
+				System.out.println("______________________");
+				for (int n = 0; n < divisionsU; n++) {
+					double u = (double)n/(double)divisionsU;
+					outputMesh.uvs.add((new Vector2((float)u, 0f)));
+//					System.out.println(u);
+//					System.out.println(0);
+
+//					OBJFace triangle1 = new OBJFace(3, true, true);
+//					triangle1.setVertex(0, m, 0, 0);
+//					triangle1.setVertex(1, m+n+1, 1, 0);
+//					triangle1.setVertex(2, m+n+2, 2, 0);
+//					outputMesh.faces.add(triangle1);
+				}
+			} else {
+				for (int n = 0; n < divisionsU; n++) {
+					double angle1 = ((double)m)/((double)divisionsV) * Math.PI;
+					double angle2 = ((double)n)/((double)divisionsU) * 2 * Math.PI;
+					double x = Math.sin(angle1) * Math.sin(angle2);
+					double z = Math.sin(angle1) * Math.cos(angle2);
+					double y = Math.cos(angle1);
+					System.out.println(x);
+					System.out.println(y);
+					System.out.println(z);
+					System.out.println("______________________");
+					outputMesh.positions.add((new Vector3((float)x, (float)y, (float)z)));
+
+					outputMesh.normals.add((new Vector3((float)x, (float)y, (float)z)));
+
+					double u = (double)n/(double)divisionsU;
+					double v = 1f - (double)m/(double)divisionsV;
+					outputMesh.uvs.add((new Vector2((float)u, (float)v)));
+//					System.out.println(u);
+//					System.out.println(v);
+
+//					OBJFace triangle1 = new OBJFace(3, true, true);
+//					triangle1.setVertex(0, 0, 0, 0);
+//					triangle1.setVertex(1, 1, 1, 0);
+//					triangle1.setVertex(2, 2, 2, 0);
+//					outputMesh.faces.add(triangle1);
+//
+//					OBJFace triangle2 = new OBJFace(3, true, true);
+//					triangle2.setVertex(0, 0, 0, 0);
+//					triangle2.setVertex(1, 1, 1, 0);
+//					triangle2.setVertex(2, 2, 2, 0);
+//					outputMesh.faces.add(triangle2);
+				}
+			}
+		}
 		return outputMesh;
 	}
 	
