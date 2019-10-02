@@ -1,0 +1,10 @@
+
+*.xml
+filters/.DS_Store
+filters/.idea/workspace.xml
+mesh/.DS_Store
+mesh/data/.DS_Store
+mesh/mesh.iml
+mesh/src/.DS_Store
+mesh/src/meshgen/.DS_Store
+filters/.idea/workspace.xml
