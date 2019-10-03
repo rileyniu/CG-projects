@@ -259,10 +259,15 @@ public class RayTracer {
 		//    just return the scene's background color.
 		// 3) Get the shader from the intersection record.
 		// 4) Call the shader's shade() method to set the color for this ray.
+		if (depth > MAX_DEPTH) {
+			return;
+		}
+		outColor.set(scene.backColor);
 		
-		// Reset the output color
-		outColor.setZero();
-		
-				
+		IntersectionRecord rec = new IntersectionRecord();
+		if (scene.getFirstIntersection(rec, ray)) {
+			Shader shader = rec.surface.getShader();
+			shader.shade(outColor, scene, ray, rec, depth);
+		}
 	}
 }
