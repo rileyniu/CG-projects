@@ -1,5 +1,6 @@
 package ray1.surface;
 
+import egl.math.Matrix3;
 import ray1.IntersectionRecord;
 import ray1.Ray;
 import egl.math.Vector3;
@@ -31,16 +32,49 @@ public class Sphere extends Surface {
    * outRecord is not modified.
    *
    * @param outRecord the output IntersectionRecord
-   * @param ray the ray to intersect
+   * @param rayIn the ray to intersect
    * @return true if the surface intersects the ray
    */
   public boolean intersect(IntersectionRecord outRecord, Ray rayIn) {
     // TODO#Ray Task 2: fill in this function.
-
-	    
+        Vector3d p = new Vector3d(rayIn.origin).sub(center);
+        Vector3d d = new Vector3d(rayIn.direction);
+        double tm = -d.clone().dot(p);
+        double lmsq = p.clone().lenSq()-tm * tm;
+        double deltaT = Math.sqrt(radius*radius-lmsq);
 	    // If there was an intersection, fill out the intersection record
-
-	    
+        if(Math.sqrt(lmsq)<=radius){
+	      double t1 = tm-deltaT;
+	      double t2 = tm+deltaT;
+	      double t = 0;
+	      
+	      // test if t is withn ray.start and ray.end
+	      if (t1 > rayIn.start && t1 < rayIn.end) {
+			  t = t1;
+		  } else if (t2 > rayIn.start && t2 < rayIn.end) {
+			  t = t2;
+		  } else {
+			  return false;
+		  }
+	      
+	      Vector3d pos = new Vector3d();
+	      rayIn.evaluate(pos,t);
+	      outRecord.location.set(pos);
+	      
+	      Vector3d norm = new Vector3d();
+	      norm.set(pos).sub(center).normalize();
+	      outRecord.normal.set(norm);
+	
+	      double phi = Math.acos(norm.y/this.radius);
+	      double theta = Math.atan2(norm.x, norm.z);
+	      double u = (theta+Math.PI)/(Math.PI*2);
+	      double v = (Math.PI-phi)/Math.PI;
+	      outRecord.texCoords.set(u,v);
+	      outRecord.surface = this;
+	      outRecord.t = t;
+	      return true;
+          
+        }
 	    return false;
   }
   

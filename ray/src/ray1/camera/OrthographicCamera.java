@@ -1,5 +1,6 @@
 package ray1.camera;
 
+import egl.math.Vector3;
 import ray1.Ray;
 import egl.math.Vector3d;
 
@@ -8,7 +9,9 @@ public class OrthographicCamera extends Camera {
     //TODO#Ray Task 1: create necessary new variables/objects here, including an orthonormal basis
     //          formed by three basis vectors and any other helper variables 
     //          if needed.
-	
+    public Vector3d u = new Vector3d();
+    public Vector3d v = new Vector3d();
+    public Vector3d w = new Vector3d();
     
     
     /**
@@ -19,8 +22,11 @@ public class OrthographicCamera extends Camera {
         // 1) Set the 3 basis vectors in the orthonormal basis, 
         //    based on viewDir and viewUp
         // 2) Set up the helper variables if needed
-
-
+        w.addMultiple(-1, this.getViewDir());
+        w.normalize();
+        Vector3d viewUpCopy = new Vector3d(this.getViewUp());
+        u = viewUpCopy.clone().cross(w).normalize();
+        v = w.clone().cross(u).normalize();
     }
 
     /**
@@ -39,9 +45,16 @@ public class OrthographicCamera extends Camera {
         //    In an orthographic camera, the origin should depend on your transformed
         //    inU and inV and your basis vectors u and v.
         // 3) Set the direction field of outRay for an orthographic camera.
+        double newU = - this.getViewWidth()/2+inU*this.getViewWidth();
+        double newV = -this.getViewHeight()/2+inV*this.getViewHeight();
 
+        Vector3d origin= new Vector3d(this.getViewPoint());
+        origin.addMultiple(newU,u).addMultiple(newV,v);//e+uu+vv
+        Vector3d rayDir = new Vector3d();
+        rayDir.addMultiple(-1,w);  //-w
 
-        
+        outRay.set(origin,rayDir);
+        outRay.makeOffsetRay();
 
     }
 
