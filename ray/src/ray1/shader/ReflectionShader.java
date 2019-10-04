@@ -66,9 +66,47 @@ public abstract class ReflectionShader extends Shader {
 				// 		6d) call RayTracer.shadeRay() with the mirror reflection ray and (depth+1)
 				// 		6e) add returned color value in 6d) to output
 		
+		for (Light l: scene.getLights()) {
+			if (!isShadowed(scene, l, record)) {
+				incoming.set(l.position).sub(record.location);
+				float r2 = (float)incoming.lenSq();
+				incoming.normalize();
+				
+				// this ray should contribute to the Colorf only when both incoming and outgoing are 
+				// not facing away from the shading normal
+				if(incoming.clone().dot(surfaceNormal) > 0 && outgoing.clone().dot(surfaceNormal) >0) {
+					Colorf BRDFfactor = new Colorf();
+					Colorf BRDFValue = new Colorf();
+					double f = Math.max(0, surfaceNormal.clone().dot(incoming))/r2;
+					BRDFValue.set(l.intensity).mul((float)f);
+					brdf.EvalBRDF(incoming, outgoing, surfaceNormal, texCoords, BRDFfactor);
+					BRDFValue.mul(BRDFfactor);
+					BRDFVal.add(BRDFValue);
+				}
+			}
+		}
 	
 		// recursive reflection
-
+		if (!mirrorCoefficient.isZero()) {
+			// compute reflection ray
+			Vector3d refdir = new Vector3d();
+			refdir.addMultiple(2*(outgoing.clone().dot(surfaceNormal)),surfaceNormal).sub(outgoing);
+			Ray refRay = new Ray(record.location,refdir);
+			refRay.makeOffsetRay();
+			
+			// fresnel
+			double costheta = surfaceNormal.clone().dot(outgoing);
+			if (costheta > 0) {
+				double schlickFactor = Math.pow(1-costheta, 5);
+				Colorf refFactor = new Colorf();
+				refFactor.set(mirrorCoefficient).addMultiple((float)schlickFactor, (new Vector3(1,1,1).sub(mirrorCoefficient)));
+				Colorf refValue = new Colorf();
+				RayTracer.shadeRay(refValue,scene,refRay,depth+1);
+				BRDFVal.add(refFactor.mul(refValue));
+			}
+			
+		}
+		outIntensity.add(BRDFVal);
 		
 	}
 

@@ -37,17 +37,18 @@ public class Sphere extends Surface {
    */
   public boolean intersect(IntersectionRecord outRecord, Ray rayIn) {
     // TODO#Ray Task 2: fill in this function.
-        Vector3d p = new Vector3d(rayIn.origin).sub(center);
+        Vector3d p = new Vector3d(rayIn.origin);
         Vector3d d = new Vector3d(rayIn.direction);
-        double tm = -d.clone().dot(p);
-        double lmsq = p.clone().lenSq()-tm * tm;
-        double deltaT = Math.sqrt(radius*radius-lmsq);
-	    // If there was an intersection, fill out the intersection record
-        if(Math.sqrt(lmsq)<=radius){
-	      double t1 = tm-deltaT;
-	      double t2 = tm+deltaT;
-	      double t = 0;
-	      
+        p.sub(center);
+        double tm = -1 * d.clone().dot(p);
+	  	double delta = tm * tm - d.clone().lenSq() * (p.clone().lenSq() - radius*radius);
+	  	
+	 // If there was an intersection, fill out the intersection record
+	  	if(delta >= 0){
+  		  double t = 0;
+		  double t1 = (tm - Math.sqrt(delta))/d.clone().lenSq();
+		  double t2 = (tm + Math.sqrt(delta))/d.clone().lenSq();
+
 	      // test if t is withn ray.start and ray.end
 	      if (t1 > rayIn.start && t1 < rayIn.end) {
 			  t = t1;
