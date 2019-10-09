@@ -334,6 +334,13 @@ public class Vector3 extends AbstractList<Float> implements Cloneable {
 		z /= _z;
 		return this;
 	}
+	
+	public Vector3 div(double _x, double _y, double _z) {
+		x /= _x;
+		y /= _y;
+		z /= _z;
+		return this;
+	}
 
 	/**
 	 * In-place componentwise division

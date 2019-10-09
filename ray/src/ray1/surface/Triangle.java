@@ -11,6 +11,7 @@ import egl.math.Vector3;
 import egl.math.Vector3d;
 import ray1.shader.Shader;
 import ray1.OBJFace;
+import ray1.accel.BboxUtils;
 
 /**
  * Represents a single triangle, part of a triangle mesh
@@ -22,10 +23,10 @@ public class Triangle extends Surface {
   Vector3 norm;
   
   /** The mesh that contains this triangle */
-  Mesh owner;
+  public Mesh owner;
   
   /** The face that contains this triangle */
-  OBJFace face = null;
+  public OBJFace face = null;
   
   double a, b, c, d, e, f;
   public Triangle(Mesh owner, OBJFace face, Shader shader) {
@@ -66,6 +67,7 @@ public class Triangle extends Surface {
    * @return true if the surface intersects the ray
    */
   public boolean intersect(IntersectionRecord outRecord, Ray rayIn) {
+	  double prec = 1e-10; 
     // TODO#Ray Task 2: fill in this function.
 	  double g = rayIn.direction.x;
 	  double h = rayIn.direction.y;
@@ -78,15 +80,15 @@ public class Triangle extends Surface {
 	  // in-triangle test by cramer rule
 	  double detA = a*(e*i-f*h) - b*(d*i - f*g) + c*(d*h - e*g);
 	  double t = -(f*(a*k -j*b) + e*(j*c - a*l) + d*(b*l - k*c))/detA;
-	  if ((t<rayIn.start) || (t> rayIn.end)) {
+	  if ((t<rayIn.start-prec) || (t> rayIn.end+prec)) {
 		  return false;
 	  }
 	  double gamma = (i*(a*k - j*b) + h*(j*c - a*l) + g*(b*l - k*c))/detA;
-	  if ((gamma<0) || (gamma> 1)) {
+	  if ((gamma<-prec) || (gamma> 1+prec)) {
 		  return false;
 	  }
 	  double beta = (j*(e*i - h*f) + k*(g*f - d*i) + l*(d*h - e*g))/detA;
-	  if ((beta<0) || (beta> 1-gamma)) {
+	  if ((beta<-prec) || (beta> 1-gamma+prec)) {
 		  return false;
 	  }
 	    
@@ -125,6 +127,10 @@ public class Triangle extends Surface {
 	  outRecord.surface = this;
 	  return true;
 	  
+  }
+  
+  public void computeBoundingBox(){
+	  BboxUtils.triangleBBox(this);
   }
 
   /**

@@ -10,6 +10,8 @@ import ray1.shader.Shader;
 import ray1.surface.Surface;
 import ray1.shader.Texture;
 import ray1.shader.BRDF;
+import ray1.accel.AccelStruct;
+import ray1.accel.Bvh;
 
 /**
  * The scene is just a collection of objects that compose a scene. The camera,
@@ -74,6 +76,11 @@ public class Scene {
 	public Image getImage() { return this.outputImage; }
 	public void setImage(Image outputImage) { this.outputImage = outputImage; }
 	
+	/** The acceleration structure **/
+	protected AccelStruct accelStruct = new Bvh();
+	public void setAccelStruct(AccelStruct accelStruct) { this.accelStruct = accelStruct; }
+	public AccelStruct getAccelStruct() { return accelStruct; }
+	
 	/**
 	* Initialize method
 	*/
@@ -85,6 +92,9 @@ public class Scene {
 			iter.next().appendRenderableSurfaces(renderableSurfaces);
 		}
 		setSurfaces(renderableSurfaces);
+		Surface surfaceArray[] = new Surface[renderableSurfaces.size()];
+		renderableSurfaces.toArray(surfaceArray);
+		getAccelStruct().build(surfaceArray);
 		
 		// initialize camera
 		getCamera().init();
@@ -133,7 +143,10 @@ public class Scene {
 	 * @return true if any intersection is found
 	 */
 	public boolean getAnyIntersection(Ray ray) {
-		return intersect(new IntersectionRecord(), ray, true);	
+		//return intersect(new IntersectionRecord(), ray, true);	
+		
+		//TODO#Ray Part 2: uncomment the following line, and comment the previous line out.
+		return accelStruct.intersect(new IntersectionRecord(), ray, true);
 	}
 	
 	private boolean intersect(IntersectionRecord outRecord, Ray rayIn, boolean anyIntersection) {
@@ -146,24 +159,27 @@ public class Scene {
 		//          4) If anyIntersection is true, return immediately.
 		//		    5) Set outRecord to the IntersectionRecord of the first object hit.
 		//		    6) If there was an intersection, return true; otherwise return false.
-		boolean ret = false;
-		Ray rayCopy = new Ray(rayIn);
 		
-		for (int i = 0; i<surfaces.size();i++) {
-			IntersectionRecord rec = new IntersectionRecord();
-			
-			if (surfaces.get(i).intersect(rec, rayCopy)) {
-				if(anyIntersection) {
-					return true;
-				}
-				if(rec.t < rayIn.end) {
-					rayIn.end = rec.t;
-					//modify the outrecord
-					outRecord.set(rec);
-					ret = true;
-				}
-			} 
-		}
-		return ret;
+//		boolean ret = false;
+//		Ray rayCopy = new Ray(rayIn);
+//		
+//		for (int i = 0; i<surfaces.size();i++) {
+//			IntersectionRecord rec = new IntersectionRecord();
+//			
+//			if (surfaces.get(i).intersect(rec, rayCopy)) {
+//				if(anyIntersection) {
+//					return true;
+//				}
+//				if(rec.t < rayIn.end) {
+//					rayIn.end = rec.t;
+//					//modify the outrecord
+//					outRecord.set(rec);
+//					ret = true;
+//				}
+//			} 
+//		}
+//		return ret;
+//		 TODO#Ray Part 2: uncomment the following line, and comment your previous solution out.
+		 return accelStruct.intersect(outRecord, rayIn, anyIntersection);
 	}
 }
