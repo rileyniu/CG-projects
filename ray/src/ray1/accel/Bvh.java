@@ -94,7 +94,26 @@ public class Bvh implements AccelStruct {
 		}
 		else 
 		{
-			return intersectHelper(node.child[0],outRecord,rayIn,anyIntersection) || intersectHelper(node.child[1],outRecord,rayIn,anyIntersection);
+			IntersectionRecord lRecord = new IntersectionRecord();
+			IntersectionRecord rRecord = new IntersectionRecord();
+
+			boolean l_intersected = intersectHelper(node.child[0],lRecord,rayIn,anyIntersection);
+			boolean r_intersected = intersectHelper(node.child[1],rRecord,rayIn,anyIntersection);
+			
+			// return directly if no intersection
+			if(!l_intersected && !r_intersected) {
+				return false;
+			} // set outrecord t to the smaller t if both intersected
+			else if (l_intersected && r_intersected)
+			{
+				outRecord.set(lRecord.t < rRecord.t ? lRecord : rRecord);
+			} // set outrecord to the intersection record if only one is intersected
+			else
+			{
+				outRecord.set(l_intersected ? lRecord : rRecord);
+			}
+		
+			return true;
 		}
 	}
 

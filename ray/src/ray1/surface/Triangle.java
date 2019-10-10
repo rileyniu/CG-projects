@@ -67,7 +67,7 @@ public class Triangle extends Surface {
    * @return true if the surface intersects the ray
    */
   public boolean intersect(IntersectionRecord outRecord, Ray rayIn) {
-	  double prec = 1e-10; 
+	   
     // TODO#Ray Task 2: fill in this function.
 	  double g = rayIn.direction.x;
 	  double h = rayIn.direction.y;
@@ -80,15 +80,15 @@ public class Triangle extends Surface {
 	  // in-triangle test by cramer rule
 	  double detA = a*(e*i-f*h) - b*(d*i - f*g) + c*(d*h - e*g);
 	  double t = -(f*(a*k -j*b) + e*(j*c - a*l) + d*(b*l - k*c))/detA;
-	  if ((t<rayIn.start-prec) || (t> rayIn.end+prec)) {
+	  if ((t<rayIn.start) || (t> rayIn.end)) {
 		  return false;
 	  }
 	  double gamma = (i*(a*k - j*b) + h*(j*c - a*l) + g*(b*l - k*c))/detA;
-	  if ((gamma<-prec) || (gamma> 1+prec)) {
+	  if ((gamma<0) || (gamma> 1)) {
 		  return false;
 	  }
 	  double beta = (j*(e*i - h*f) + k*(g*f - d*i) + l*(d*h - e*g))/detA;
-	  if ((beta<-prec) || (beta> 1-gamma+prec)) {
+	  if ((beta<0) || (beta> 1-gamma)) {
 		  return false;
 	  }
 	    

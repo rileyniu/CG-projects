@@ -45,6 +45,7 @@ public class BboxUtils {
 		s.minBound = new Vector3d(center.clone().sub((float)s.getRadius()));
 		s.maxBound = new Vector3d(center.clone().add((float)s.getRadius()));
 			
+		
 	}
 	
 	/**

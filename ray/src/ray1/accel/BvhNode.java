@@ -89,6 +89,26 @@ public class BvhNode {
 		Vector3d p = ray.origin;
 		Vector3d d = ray.direction;
 		
+		// check boundary cases when ray is parallel to a slab
+		if (d.x==0)
+		{
+			if (p.x < minBound.x || ray.origin.x > maxBound.x)
+			{
+				return false;
+			}
+		}else if(d.y==0) {
+			if (p.y < minBound.y || ray.origin.y > maxBound.y)
+			{
+				return false;
+			}
+		}else if(d.z==0) {
+			if (p.z < minBound.z || ray.origin.z > maxBound.z)
+			{
+				return false;
+			}
+		}
+		
+		// obtain min and max enter/exit point on each axis
 		double txmin = (minBound.x - p.x)/d.x;
 		double txmax = (maxBound.x - p.x)/d.x;
 		double tymin = (minBound.y - p.y)/d.y;
@@ -102,19 +122,13 @@ public class BvhNode {
 		double tzenter = Math.min(tzmin, tzmax);
 		double tzexit = Math.max(tzmin, tzmax);
 		
-		if (txexit>tyenter) {
-			double txymax = Math.min(txexit, tyexit);
-			if(txymax>tzenter)
-			{
-				return true;
-			}
-		}
-		return false;
-//		double tenter = tyenter > tzenter ? tyenter : tzenter;
-//		tenter = tenter > txenter ? tenter : txenter;
-//		double texit = tyexit < tzexit ? tyexit : tzexit;
-//		texit = texit < txexit ? texit : txexit;
-//		return texit >= tenter && tenter <= ray.end && texit >= ray.start;
+		// obtain final intersection
+		double tenter = tyenter > tzenter ? tyenter : tzenter;
+		tenter = tenter > txenter ? tenter : txenter;
+		double texit = tyexit < tzexit ? tyexit : tzexit;
+		texit = texit < txexit ? texit : txexit;
+		
+		return texit >= tenter && tenter <= ray.end && texit >= ray.start;
 
 	}
 }
