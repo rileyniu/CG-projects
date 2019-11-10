@@ -1,1 +1,1 @@
-# cs-4620-computer-graphics
+# computer-graphics-projects
