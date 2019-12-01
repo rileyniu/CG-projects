@@ -5,6 +5,7 @@ import mesh.OBJFace;
 import mesh.OBJMesh;
 import mesh.OBJMesh_Archive;
 import egl.NativeMem;
+import egl.math.Matrix3;
 import egl.math.Matrix4;
 import egl.math.Vector2;
 import egl.math.Vector3;
@@ -184,7 +185,23 @@ public abstract class SplineCurve {
 	 */
 	private void setBeziers() {
 		//TODO A6
+		this.bezierCurves = new ArrayList<CubicBezier>();
+		int size = this.controlPoints.size();
+		for (int i = 0; i< size-3; ++i) {
+			CubicBezier bezier = this.toBezier(this.controlPoints.get(i),this.controlPoints.get(i+1),
+					this.controlPoints.get(i+2),this.controlPoints.get(i+3), this.epsilon);
+			System.out.println(this.bezierCurves);
+			this.bezierCurves.add(bezier);
+		}
 		
+		if(isClosed){
+			for(int i = size-3; i<size; ++i) {
+				CubicBezier bezier = this.toBezier(this.controlPoints.get(i%size),this.controlPoints.get((i+1)%size),
+						this.controlPoints.get((i+2)%size),this.controlPoints.get((i+3)%size), this.epsilon);
+				this.bezierCurves.add(bezier);
+			}
+		}
+
 	}
 	
 	/**
@@ -234,6 +251,60 @@ public abstract class SplineCurve {
 	 */
 	public static void build3DRevolution(SplineCurve crossSection, OBJMesh mesh, float scale, float sliceTolerance) {
 		//TODO A6
+		
+		ArrayList<Vector2> points = crossSection.getPoints();
+		ArrayList<Vector2> normals = crossSection.getNormals();
+		int n = (int)Math.ceil(2 * Math.PI / sliceTolerance);
+		double delta = 2 * Math.PI/n;
+		int[][] indices = new int[n + 1][points.size() + 1];
+		int count = 0;
+		// add positions and normals
+		for (int i = 0; i < n; i++) {
+			Matrix3 rotationMat = Matrix3.createRotationZ((float)(i * delta));
+			for (int j = 0; j < points.size(); j++) {
+				Vector3 vertex = new Vector3(points.get(j).x, 0f, points.get(j).y);
+				Vector3 normal = new Vector3(normals.get(j).x, 0f, normals.get(j).y);
+				mesh.positions.add(rotationMat.mul(vertex).mul(scale));
+				mesh.normals.add(rotationMat.mul(normal));
+				indices[i][j] = count;
+				count++;
+			}
+			indices[i][points.size()] = indices[i][0];
+		}
+		
+		for (int j = 0; j < points.size() + 1; j++) {
+			indices[n][j] = indices[0][j];
+		}
+		
+		int round = points.size();
+		
+		if (!crossSection.isClosed()) {
+			round--;
+		}
+		// construct faces
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < round; j++) {
+				OBJFace a = new OBJFace(3, false, true);
+				a.normals[0] = indices[i][j + 1];
+				a.normals[1] = indices[i][j];
+				a.normals[2] = indices[i + 1][j];
+				a.positions[0] = indices[i][j + 1];
+				a.positions[1] = indices[i][j];
+				a.positions[2] = indices[i + 1][j];
+				mesh.faces.add(a);
+				OBJFace b = new OBJFace(3, false, true);
+				b.normals[0] = indices[i][j + 1];
+				b.normals[1] = indices[i + 1][j];
+				b.normals[2] = indices[i + 1][j + 1];
+				b.positions[0] = indices[i][j + 1];
+				b.positions[1] = indices[i + 1][j];
+				b.positions[2] = indices[i + 1][j + 1];
+				mesh.faces.add(b);
+			}
+		}
+		
+		
+		
 		
 	}
 }

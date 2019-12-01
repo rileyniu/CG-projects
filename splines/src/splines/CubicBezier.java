@@ -58,9 +58,50 @@ public class CubicBezier {
      * array self.curvePoints, the tangents into self.curveTangents, and the normals into self.curveNormals.
      * The final point, p3, is not included, because cubic Beziers will be "strung together".
      */
-    private void tessellate() {
-    	 // TODO A6
+	 private void tessellate() {
+		 // TODO A6
+		// fill in the initial point
+		Vector2 tangent = p1.clone().sub(p0).normalize();
+		Vector2 normal = new Vector2(tangent.y, -tangent.x).normalize();
+		curvePoints.add(p0);
+		curveTangents.add(tangent);
+		curveNormals.add(normal);
+		
+		// Recursively subdivide.
+		tessellate_rec(p0, p1, p2, p3, 0, 0.5f);
+	}
+    
+    private void tessellate_rec(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float depth, float u) {
+    	int maxDepth = 10;
+    	if(u<0 || u>1) return; // u should be in range [0,1]
+    	if(depth > maxDepth) return; // max recursion depth
     	
+    	Vector2 vec01 = p1.clone().sub(p0).normalize();
+		Vector2 vec12 = p2.clone().sub(p1).normalize();
+		Vector2 vec23 = p3.clone().sub(p2).normalize();
+
+		double theta012 = Math.abs(Math.acos(vec01.clone().dot(vec12)));
+		double theta123 = Math.abs(Math.acos(vec12.clone().dot(vec23)));
+
+		if (theta012 > epsilon || theta123 > epsilon) {
+			Vector2 p10 = p0.clone().lerp(p1,u);
+			Vector2 p11 = p1.clone().lerp(p2, u);
+			Vector2 p12 = p2.clone().lerp(p3, u);
+			Vector2 p20 = p10.clone().lerp(p11, u);
+			Vector2 p21 = p11.clone().lerp(p12, u);
+			Vector2 p30 = p20.clone().lerp(p21, u);
+
+			Vector2 tangent = p21.clone().sub(p20).normalize();
+			Vector2 normal = new Vector2(tangent.y, -tangent.x).normalize();
+			tessellate_rec(p0, p10, p20, p30, depth++, u);
+			
+			curvePoints.add(p30);
+			curveTangents.add(tangent);
+			curveNormals.add(normal);
+			
+			tessellate_rec(p30, p21, p12, p3, depth++, u);
+			
+		}
     }
 	
     
